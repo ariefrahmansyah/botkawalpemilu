@@ -62,6 +62,7 @@ func main() {
 	}
 	interval := fmt.Sprintf("@every %s", tweetInterval)
 
+	botKawalPemiluPingEndpoint := "https://botkawalpemilu.herokuapp.com/ping"
 	kawalPemiluAPIEndpoint := "https://kawal-c1.appspot.com/api/c/0"
 
 	oauthConfig := oauth1.NewConfig(twitterConsumerAPIKey, twitterConsumerAPISecret)
@@ -71,6 +72,14 @@ func main() {
 	twitterClient := twitter.NewClient(oauthClient)
 
 	c := cron.New()
+	c.AddFunc("@every 1s", func() {
+		resp, err := http.Get(botKawalPemiluPingEndpoint)
+		if err != nil {
+			log.Printf("Fail pinging botkawalpemilu: %s", err)
+			return
+		}
+		defer resp.Body.Close()
+	})
 	c.AddFunc(interval, func() {
 		log.Printf("Getting new data...")
 
