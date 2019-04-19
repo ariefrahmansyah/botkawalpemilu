@@ -116,7 +116,7 @@ func main() {
 
 		p := message.NewPrinter(language.Dutch)
 
-		newStatus := p.Sprintf("Jokowi-Amin: %d (%d)\nPrabowo-Sandi: %d (%d)\n\n@KawalPemilu2019 #PantauFotoUpload",
+		newStatus := p.Sprintf("Jokowi-Amin: %d (%d)\nPrabowo-Sandi: %d (%d)\n\n@KawalPemilu2019 #PantauFotoUpload #IndonesianElectionHeroes",
 			number.Decimal(totalCandidate1),
 			number.Percent(percentageCandidate1, number.MaxFractionDigits(3)),
 			number.Decimal(totalCandidate2),
