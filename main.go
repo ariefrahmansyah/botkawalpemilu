@@ -75,7 +75,7 @@ func main() {
 	twitterClient := twitter.NewClient(oauthClient)
 
 	c := cron.New()
-	c.AddFunc("@every 1s", func() {
+	c.AddFunc("@every 5m", func() {
 		resp, err := http.Get(botKawalPemiluPingEndpoint)
 		if err != nil {
 			log.Printf("Fail pinging botkawalpemilu: %s", err)
