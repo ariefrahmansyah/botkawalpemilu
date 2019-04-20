@@ -20,10 +20,13 @@ import (
 )
 
 type kawalPemiluResponse struct {
-	Data map[string]struct {
+	Children [][]interface{} `json:"children"`
+	Data     map[string]struct {
 		Summary struct {
 			Candidate1 int `json:"pas1"`
 			Candidate2 int `json:"pas2"`
+			Cakupan    int `json:"cakupan"` // # of TPS uploaded to KawalPemilu
+			Pending    int `json:"pending"` // # of TPS uploaded to KawalPemilu but not processed yet
 		} `json:"sum"`
 	} `json:"data"`
 }
@@ -103,24 +106,41 @@ func main() {
 		}
 
 		totalCandidate1, totalCandidate2 := 0, 0
+		tpsProcessed := 0
 
 		for _, data := range response.Data {
 			totalCandidate1 += data.Summary.Candidate1
 			totalCandidate2 += data.Summary.Candidate2
+
+			tpsProcessed += data.Summary.Cakupan - data.Summary.Pending
 		}
 
 		total := totalCandidate1 + totalCandidate2
 
-		percentageCandidate1 := (float64(totalCandidate1) / float64(total))
-		percentageCandidate2 := (float64(totalCandidate2) / float64(total))
+		percentageCandidate1 := float64(totalCandidate1) / float64(total)
+		percentageCandidate2 := float64(totalCandidate2) / float64(total)
+
+		var totalTPS float64
+		for _, child := range response.Children {
+			totalTPS += child[2].(float64)
+		}
+
+		percentageTPS := float64(tpsProcessed) / float64(totalTPS)
+
+		log.Println("Total TPS", totalTPS)
+		log.Println("Total TPS Processed", tpsProcessed)
+		log.Println("Percentage TPS Processed", percentageTPS)
 
 		p := message.NewPrinter(language.Dutch)
 
-		newStatus := p.Sprintf("Jokowi-Amin: %d (%d)\nPrabowo-Sandi: %d (%d)\n\n@KawalPemilu2019 #PantauFotoUpload #IndonesianElectionHeroes",
+		newStatus := p.Sprintf("Jokowi-Amin: %d (%d)\nPrabowo-Sandi: %d (%d)\n\nTotal TPS: %d dari %d (%d)\n\n@KawalPemilu2019 #PantauFotoUpload #IndonesianElectionHeroes",
 			number.Decimal(totalCandidate1),
 			number.Percent(percentageCandidate1, number.MaxFractionDigits(3)),
 			number.Decimal(totalCandidate2),
 			number.Percent(percentageCandidate2, number.MaxFractionDigits(3)),
+			number.Decimal(tpsProcessed),
+			number.Decimal(totalTPS),
+			number.Percent(percentageTPS, number.MaxFractionDigits(3)),
 		)
 
 		if newStatus != status {
@@ -139,6 +159,7 @@ func main() {
 				log.Printf("Updating status error: %s", err)
 				return
 			}
+			// _ = twitterClient
 		}
 
 		status = newStatus
