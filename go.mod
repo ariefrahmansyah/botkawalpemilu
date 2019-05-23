@@ -12,5 +12,5 @@ require (
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/text v0.3.0
+	golang.org/x/text v0.3.2
 )
