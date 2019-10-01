@@ -9,7 +9,7 @@ require (
 	github.com/dghubble/sling v1.2.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/heroku/x v0.0.0-20181102215100-85e5aa5e6aa1
-	github.com/julienschmidt/httprouter v1.2.0
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/stretchr/testify v1.3.0 // indirect
 	golang.org/x/text v0.3.0
