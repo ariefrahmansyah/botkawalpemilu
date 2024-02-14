@@ -141,8 +141,6 @@ Paslon 3: {total_pas3:,} ({total_percentage_pas3:.2f}%) menang 20% di {total_pas
 
 Total TPS: {total_processed_tps:,} dari {total_tps:,} ({total_percentage_tps:.2f}%)
 
-Apakah akan dua putaran? {answer}
-
 @KawalPemilu_org"""
 print(newStatus)
 print()
