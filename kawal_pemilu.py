@@ -74,6 +74,8 @@ for name, aggregated_data in data.result.aggregated.items():
         total_pas2 += data.pas2
         total_pas3 += data.pas3
         total = data.pas1 + data.pas2 + data.pas3
+        if total == 0:
+            continue
 
         total_processed_tps += data.totalCompletedTps
         total_tps += data.totalTps
@@ -135,13 +137,13 @@ elif total_percentage_pas3 > 50 and total_pas3_win20 >= 20:
     answer = "Sepertinya tidak 🤔"
 
 
-newStatus = f"""Paslon 1: {total_pas1:,} ({total_percentage_pas1:.2f}%) menang 20% di {total_pas1_win20} provinsi
+newStatus = f"""Dari kawalpemilu.org @KawalPemilu_org
+
+Paslon 1: {total_pas1:,} ({total_percentage_pas1:.2f}%) menang 20% di {total_pas1_win20} provinsi
 Paslon 2: {total_pas2:,} ({total_percentage_pas2:.2f}%) menang 20% di {total_pas2_win20} provinsi
 Paslon 3: {total_pas3:,} ({total_percentage_pas3:.2f}%) menang 20% di {total_pas3_win20} provinsi
 
-Total TPS: {total_processed_tps:,} dari {total_tps:,} ({total_percentage_tps:.2f}%)
-
-@KawalPemilu_org"""
+Total TPS: {total_processed_tps:,} dari {total_tps:,} ({total_percentage_tps:.2f}%)"""
 print(newStatus)
 print()
 print("========================================\n")

@@ -1,4 +1,4 @@
-name: Tweeting
+name: Tweeting data from KawalPemilu.org
 on:
   push:
     branches:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 jobs:
   tweet:
-    name: Tweeting
+    name: Tweeting data from KawalPemilu.org
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
           python-version: "3.11"
           cache: "pip"
       - run: pip install -r requirements.txt
-      - run: python main.py
+      - run: python kawal_pemilu.py
         env:
           TWITTER_CONSUMER_API_KEY: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
           TWITTER_CONSUMER_API_SECRET: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
