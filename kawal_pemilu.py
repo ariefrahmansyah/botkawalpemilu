@@ -42,10 +42,16 @@ request_json = {
     },
 }
 
-response = requests.post(
-    "https://us-central1-kp24-fd486.cloudfunctions.net/hierarchy2",
-    json=request_json,
-)
+response = requests.get("https://kp24-fd486.et.r.appspot.com/h?id=")
+try:
+    r = requests.post(
+        "https://us-central1-kp24-fd486.cloudfunctions.net/hierarchy2",
+        json=request_json,
+    )
+    r.raise_for_status()
+    response = r
+except requests.exceptions.HTTPError as e:
+    print(e)
 
 data = Data(**response.json())
 
