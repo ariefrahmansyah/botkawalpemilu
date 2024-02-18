@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from typing import Dict, List
 
 import pandas as pd
@@ -8,6 +9,7 @@ import plotly.graph_objects as go
 import requests
 import tweepy
 from pydantic import BaseModel
+from pytz import timezone
 
 
 class AggregatedData(BaseModel):
@@ -63,11 +65,9 @@ from datetime import datetime
 
 ts = int("1284101485")
 
-# if you encounter a "year is out of range" error the timestamp
-# may be in milliseconds, try `ts /= 1000` in that case
-last_cached = datetime.fromtimestamp(data.result.lastCachedTs / 1000).strftime(
-    "%d %b %Y %H:%M:%S"
-)
+last_cached = datetime.fromtimestamp(data.result.lastCachedTs / 1000)
+last_cached = last_cached.astimezone(timezone("Asia/Jakarta"))
+last_cached = last_cached.strftime("%d %b %Y %H:%M:%S %Z")
 print(f"Last cached: {last_cached}")
 
 total_pas1 = 0
