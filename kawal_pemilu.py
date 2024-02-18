@@ -1,6 +1,10 @@
+import json
 import os
 from typing import Dict, List
 
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import tweepy
 from pydantic import BaseModel
@@ -55,6 +59,17 @@ except requests.exceptions.HTTPError as e:
 
 data = Data(**response.json())
 
+from datetime import datetime
+
+ts = int("1284101485")
+
+# if you encounter a "year is out of range" error the timestamp
+# may be in milliseconds, try `ts /= 1000` in that case
+last_cached = datetime.fromtimestamp(data.result.lastCachedTs / 1000).strftime(
+    "%d %b %Y %H:%M:%S"
+)
+print(f"Last cached: {last_cached}")
+
 total_pas1 = 0
 total_pas2 = 0
 total_pas3 = 0
@@ -73,6 +88,15 @@ name_pas2_win20 = []
 name_pas3_win20 = []
 
 answer = "Sepertinya iya 🤔"
+
+d = {
+    "PROVINSI": [],
+    "Paslon 1": [],
+    "Paslon 2": [],
+    "Paslon 3": [],
+    "Pemenang": [],
+    "Δ sebaran suara Paslon 2": [],
+}
 
 for name, aggregated_data in data.result.aggregated.items():
     for data in aggregated_data:
@@ -93,10 +117,17 @@ for name, aggregated_data in data.result.aggregated.items():
             f"{data.name}: {percentage_pas1:.2f}% {percentage_pas2:.2f}% {percentage_pas3:.2f}%"
         )
 
+        pas1_3_percentages = [percentage_pas1, percentage_pas3]
+        pas1_3_percentages.sort(reverse=True)
+
+        selisih = round(percentage_pas2 - pas1_3_percentages[0], 2)
+
+        winner = "N/A"
         if (
             percentage_pas1 > percentage_pas2 + 20
             and percentage_pas1 > percentage_pas3 + 20
         ):
+            winner = "Paslon 1"
             total_pas1_win20 += 1
             name_pas1_win20.append(data.name)
             print(f"\t{data.name}: Paslon 1 menang 20% lebih banyak")
@@ -105,17 +136,26 @@ for name, aggregated_data in data.result.aggregated.items():
             percentage_pas2 > percentage_pas1 + 20
             and percentage_pas2 > percentage_pas3 + 20
         ):
+            winner = "Paslon 2"
             total_pas2_win20 += 1
             name_pas2_win20.append(data.name)
-            print(f"\t{data.name}: Paslon 2 menang 20% lebih banyak")
+            print(f"\t{data.name}: Paslon 2 menang {selisih}% lebih banyak")
 
         if (
             percentage_pas3 > percentage_pas1 + 20
             and percentage_pas3 > percentage_pas2 + 20
         ):
+            winner = "Paslon 3"
             total_pas3_win20 += 1
             name_pas3_win20.append(data.name)
             print(f"\t{data.name}: Paslon 3 menang 20% lebih banyak")
+
+        d["PROVINSI"].append(data.name)
+        d["Paslon 1"].append(f"{percentage_pas1:.2f}%")
+        d["Paslon 2"].append(f"{percentage_pas2:.2f}%")
+        d["Paslon 3"].append(f"{percentage_pas3:.2f}%")
+        d["Pemenang"].append(winner)
+        d["Δ sebaran suara Paslon 2"].append(selisih)
 
         print()
 
@@ -142,6 +182,69 @@ elif total_percentage_pas2 > 50 and total_pas2_win20 >= 20:
 elif total_percentage_pas3 > 50 and total_pas3_win20 >= 20:
     answer = "Sepertinya tidak 🤔"
 
+mapbox_accesstoken = os.getenv("MAPBOX_ACCESS_TOKEN")
+
+df = pd.DataFrame(data=d)
+
+with open("data/small/Provinsi.json") as file:
+    provinces = json.load(file)
+
+for feature in provinces["features"]:
+    feature["properties"]["PROVINSI"] = str.upper(feature["properties"]["PROVINSI"])
+
+fig = px.choropleth_mapbox(
+    df,
+    geojson=provinces,
+    color="Pemenang",
+    locations="PROVINSI",
+    featureidkey="properties.PROVINSI",
+    center={"lat": -2.5, "lon": 120},
+    hover_data=["Paslon 1", "Paslon 2", "Paslon 3", "Δ sebaran suara Paslon 2"],
+    mapbox_style="carto-positron",
+    zoom=4,
+)
+
+fig.update_layout(
+    mapbox_accesstoken=mapbox_accesstoken,
+    mapbox_style="light",
+    title=go.layout.Title(
+        text=f"""Pemenang 20% sebaran suara per provinsi
+<br><sup>Dari <a href="https://kawalpemilu.org">https://kawalpemilu.org</a> versi {last_cached}, progress: {total_processed_tps:,} dari {total_tps:,} TPS ({total_percentage_tps:.2f}%)</sup>""",
+        xref="paper",
+        x=0,
+    ),
+    legend_title_text="",
+)
+fig.write_html("index.html")
+fig.write_image("pemenang_20persen.png", width=1920, height=1080)
+
+fig = px.choropleth_mapbox(
+    df,
+    geojson=provinces,
+    color="Δ sebaran suara Paslon 2",
+    color_continuous_scale="Bluered",
+    locations="PROVINSI",
+    featureidkey="properties.PROVINSI",
+    center={"lat": -2.5, "lon": 120},
+    hover_data=["Paslon 1", "Paslon 2", "Paslon 3"],
+    mapbox_style="carto-positron",
+    zoom=4,
+)
+
+fig.update_layout(
+    mapbox_accesstoken=mapbox_accesstoken,
+    mapbox_style="light",
+    title=go.layout.Title(
+        text=f"""Selisih sebaran suara Paslon 2 per provinsi<br><sup>Dari <a href="https://kawalpemilu.org">https://kawalpemilu.org</a> versi {last_cached}, progress: {total_processed_tps:,} dari {total_tps:,} TPS ({total_percentage_tps:.2f}%)</sup>""",
+        xref="paper",
+        x=0,
+    ),
+)
+fig.write_html("sebaran_paslon2.html")
+fig.write_image("sebaran_paslon2.png", width=1920, height=1080)
+
+print("========================================\n")
+
 
 newStatus = f"""Dari kawalpemilu.org @KawalPemilu_org
 
@@ -159,12 +262,23 @@ consumer_secret = os.getenv("TWITTER_CONSUMER_API_SECRET")
 access_token = os.getenv("TWITTER_ACCESS_TOKEN")
 access_token_secret = os.getenv("TWITTER_ACCESS_SECRET")
 
+auth = tweepy.OAuth1UserHandler(
+    consumer_key, consumer_secret, access_token, access_token_secret
+)
+api = tweepy.API(auth=auth, wait_on_rate_limit=True)
+
+pemenang_20persen_media = api.media_upload("pemenang_20persen.png")
+sebaran_paslon2 = api.media_upload("sebaran_paslon2.png")
+
 client = tweepy.Client(
     consumer_key=consumer_key,
     consumer_secret=consumer_secret,
     access_token=access_token,
     access_token_secret=access_token_secret,
 )
+response = client.create_tweet(
+    text=newStatus,
+    media_ids=[pemenang_20persen_media.media_id, sebaran_paslon2.media_id],
+)
 
-response = client.create_tweet(text=newStatus)
 print(f"https://twitter.com/user/status/{response.data['id']}")

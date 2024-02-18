@@ -1,3 +1,7 @@
+geopandas==0.14.3
+kaleido==0.2.1
+pandas==2.2.0
+plotly==5.19.0
 pydantic==2.5.3
 requests==2.31.0
 tweepy==4.14.0

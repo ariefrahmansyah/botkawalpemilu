@@ -1,0 +1,1 @@
+This folder contains location data of Indonesia's province which retrieved from https://github.com/Alf-Anas/batas-administrasi-indonesia. I've also done some preprocessing to simplify and reduce the size of SHP file.
