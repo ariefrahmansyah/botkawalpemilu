@@ -11,6 +11,8 @@ import tweepy
 from pydantic import BaseModel
 from pytz import timezone
 
+from province_bar_chart import draw_bar_chart
+
 
 class AggregatedData(BaseModel):
     # anyErrorTps: str = None
@@ -98,6 +100,18 @@ d = {
     "Δ sebaran suara Paslon 2": [],
 }
 
+bar_chart_paslon_data = []
+bar_chart_provinsi_data = []
+
+
+class BarChartData(BaseModel):
+    selisih: float
+    paslon_votes: List[float]
+    provinces: str
+
+
+bar_chart_data = []
+
 for name, aggregated_data in data.result.aggregated.items():
     for data in aggregated_data:
         total_pas1 += data.pas1
@@ -141,6 +155,26 @@ for name, aggregated_data in data.result.aggregated.items():
             name_pas2_win20.append(data.name)
             print(f"\t{data.name}: Paslon 2 menang {selisih}% lebih banyak")
 
+            chart_data = BarChartData(
+                selisih=selisih,
+                paslon_votes=[
+                    round(percentage_pas1, 2),
+                    round(percentage_pas2, 2),
+                    round(percentage_pas3, 2),
+                ],
+                provinces=f"{data.name} ({selisih}%)",
+            )
+            bar_chart_data.append(chart_data)
+            # bar_chart_paslon_data.insert(
+            #     0,
+            #     [
+            #         round(percentage_pas1, 2),
+            #         round(percentage_pas2, 2),
+            #         round(percentage_pas3, 2),
+            #     ],
+            # )
+            # bar_chart_provinsi_data.insert(0, f"{data.name} ({selisih}%)")
+
         if (
             percentage_pas3 > percentage_pas1 + 20
             and percentage_pas3 > percentage_pas2 + 20
@@ -182,6 +216,13 @@ elif total_percentage_pas2 > 50 and total_pas2_win20 >= 20:
 elif total_percentage_pas3 > 50 and total_pas3_win20 >= 20:
     answer = "Sepertinya tidak 🤔"
 
+bar_chart_data.sort(key=lambda x: x.selisih)
+fig = draw_bar_chart(
+    bar_chart_data, last_cached, total_processed_tps, total_tps, total_percentage_tps
+)
+fig.write_html("sebaran_paslon2.html")
+fig.write_image("sebaran_paslon2.png", width=1920, height=1080)
+
 mapbox_accesstoken = os.getenv("MAPBOX_ACCESS_TOKEN")
 
 df = pd.DataFrame(data=d)
@@ -218,30 +259,30 @@ fig.update_layout(
 fig.write_html("index.html")
 fig.write_image("pemenang_20persen.png", width=1920, height=1080)
 
-fig = px.choropleth_mapbox(
-    df,
-    geojson=provinces,
-    color="Δ sebaran suara Paslon 2",
-    color_continuous_scale="Bluered",
-    locations="PROVINSI",
-    featureidkey="properties.PROVINSI",
-    center={"lat": -2.5, "lon": 120},
-    hover_data=["Paslon 1", "Paslon 2", "Paslon 3"],
-    mapbox_style="carto-positron",
-    zoom=4,
-)
+# fig = px.choropleth_mapbox(
+#     df,
+#     geojson=provinces,
+#     color="Δ sebaran suara Paslon 2",
+#     color_continuous_scale="Bluered",
+#     locations="PROVINSI",
+#     featureidkey="properties.PROVINSI",
+#     center={"lat": -2.5, "lon": 120},
+#     hover_data=["Paslon 1", "Paslon 2", "Paslon 3"],
+#     mapbox_style="carto-positron",
+#     zoom=4,
+# )
 
-fig.update_layout(
-    mapbox_accesstoken=mapbox_accesstoken,
-    mapbox_style="light",
-    title=go.layout.Title(
-        text=f"""Selisih sebaran suara Paslon 2 per provinsi<br><sup>Dari <a href="https://kawalpemilu.org">https://kawalpemilu.org</a> versi {last_cached}, progress: {total_processed_tps:,} dari {total_tps:,} TPS ({total_percentage_tps:.2f}%)</sup>""",
-        xref="paper",
-        x=0,
-    ),
-)
-fig.write_html("sebaran_paslon2.html")
-fig.write_image("sebaran_paslon2.png", width=1920, height=1080)
+# fig.update_layout(
+#     mapbox_accesstoken=mapbox_accesstoken,
+#     mapbox_style="light",
+#     title=go.layout.Title(
+#         text=f"""Selisih sebaran suara Paslon 2 per provinsi<br><sup>Dari <a href="https://kawalpemilu.org">https://kawalpemilu.org</a> versi {last_cached}, progress: {total_processed_tps:,} dari {total_tps:,} TPS ({total_percentage_tps:.2f}%)</sup>""",
+#         xref="paper",
+#         x=0,
+#     ),
+# )
+# fig.write_html("sebaran_paslon2.html")
+# fig.write_image("sebaran_paslon2.png", width=1920, height=1080)
 
 print("========================================\n")
 
