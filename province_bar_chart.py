@@ -19,6 +19,8 @@ def draw_bar_chart(
         "rgba(182, 115, 82, 1)",
     ]
 
+    font_size = 10
+
     fig = go.Figure()
 
     for i in range(0, len(x_data[0])):
@@ -68,7 +70,7 @@ def draw_bar_chart(
                 y=yd,
                 xanchor="right",
                 text=str(yd),
-                font=dict(family="Arial", size=14, color="rgb(67, 67, 67)"),
+                font=dict(family="Arial", size=font_size, color="rgb(67, 67, 67)"),
                 showarrow=False,
                 align="right",
             )
@@ -81,7 +83,7 @@ def draw_bar_chart(
                 x=xd[0] / 2,
                 y=yd,
                 text=str(xd[0]) + "%",
-                font=dict(family="Arial", size=14, color="rgb(248, 248, 255)"),
+                font=dict(family="Arial", size=font_size, color="rgb(248, 248, 255)"),
                 showarrow=False,
             )
         )
@@ -92,9 +94,9 @@ def draw_bar_chart(
                     xref="x",
                     yref="paper",
                     x=xd[0] / 2,
-                    y=1.05,
+                    y=1.03,
                     text=top_labels[0],
-                    font=dict(family="Arial", size=14, color="rgb(67, 67, 67)"),
+                    font=dict(family="Arial", size=font_size, color="rgb(67, 67, 67)"),
                     showarrow=False,
                 )
             )
@@ -108,7 +110,9 @@ def draw_bar_chart(
                     x=space + (xd[i] / 2),
                     y=yd,
                     text=str(xd[i]) + "%",
-                    font=dict(family="Arial", size=14, color="rgb(248, 248, 255)"),
+                    font=dict(
+                        family="Arial", size=font_size, color="rgb(248, 248, 255)"
+                    ),
                     showarrow=False,
                 )
             )
@@ -119,9 +123,11 @@ def draw_bar_chart(
                         xref="x",
                         yref="paper",
                         x=space + (xd[i] / 2),
-                        y=1.05,
+                        y=1.03,
                         text=top_labels[i],
-                        font=dict(family="Arial", size=14, color="rgb(67, 67, 67)"),
+                        font=dict(
+                            family="Arial", size=font_size, color="rgb(67, 67, 67)"
+                        ),
                         showarrow=False,
                     )
                 )

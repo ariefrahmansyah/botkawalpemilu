@@ -223,7 +223,7 @@ fig = draw_bar_chart(
     bar_chart_data, last_cached, total_processed_tps, total_tps, total_percentage_tps
 )
 fig.write_html("sebaran_paslon2.html")
-fig.write_image("sebaran_paslon2.png", width=1920, height=1080)
+fig.write_image("sebaran_paslon2.png", width=1000, height=1000)
 
 mapbox_accesstoken = os.getenv("MAPBOX_ACCESS_TOKEN")
 
