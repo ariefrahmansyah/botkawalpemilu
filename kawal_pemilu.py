@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import time
 from datetime import datetime
 from typing import Dict, List
 
@@ -309,7 +311,9 @@ auth = tweepy.OAuth1UserHandler(
 api = tweepy.API(auth=auth, wait_on_rate_limit=True)
 
 pemenang_20persen_media = api.media_upload("pemenang_20persen.png")
+time.sleep(random.randint(1, 3))
 sebaran_paslon2 = api.media_upload("sebaran_paslon2.png")
+time.sleep(random.randint(1, 3))
 
 client = tweepy.Client(
     consumer_key=consumer_key,

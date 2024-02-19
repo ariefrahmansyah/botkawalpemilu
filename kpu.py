@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import random
 import time
 
 import requests
@@ -124,5 +125,6 @@ client = tweepy.Client(
     access_token_secret=access_token_secret,
 )
 
+time.sleep(random.randint(1, 3))
 response = client.create_tweet(text=newStatus)
 print(f"https://twitter.com/user/status/{response.data['id']}")
